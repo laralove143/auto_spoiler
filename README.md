@@ -22,7 +22,7 @@ puts swear words or possibly triggering words in spoilers
 send a possibly triggering message in spoilers, also telling why it might be triggering
 
 #### `/tag message tag`
-end your message with one of the listed tone tags, other people can even click on the command to see what the tag means
+end your message with one of the listed tone tags, it also says their meaning in case you forgot
 
 ## nerdy stuff
 
