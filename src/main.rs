@@ -49,7 +49,6 @@ pub struct ContextInner {
 #[tokio::main]
 async fn main() -> Result<()> {
     let intents = Intents::GUILDS
-        | Intents::GUILD_MEMBERS
         | Intents::GUILD_WEBHOOKS
         | Intents::GUILD_MESSAGES
         | Intents::MESSAGE_CONTENT;
