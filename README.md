@@ -1,25 +1,28 @@
-# trigger-warning-bot-discord
+# auto-spoiler-bot-discord
 
-a discord bot to put possibly triggering words in spoilers
-
-## not usable yet
-
-right now only the `/tw` command is added and im not working on it rn so no eta
+a discord bot that automatically puts possibly triggering words in spoilers
 
 ## features
 
-### `/tw message tw_type`
+### auto-spoiler
 
-warn users that the message may be triggering, putting it in spoilers, also telling why with `tw_type`
+puts swear words or possibly triggering words in spoilers  
+- you can allow swear words or trigger words using `/allow`
+- add your own custom words with `/custom_word`
+- and even suggest words to be added to the list for everyone
 
-### to-do
+**this is not auto-moderation**, it's simply for people that don't realize what words might be triggering
 
-#### auto-spoiler
+### other commands
 
-puts the words that are in the trigger words list in spoilers  
-the trigger words list is made by the server owner in a modal and suggestions are given
-**this is not auto-moderation,** it's simply for people that don't realize which words might be triggering
+#### `/tw message tw_type`
+send a possibly triggering message in spoilers, also telling why it might be triggering
 
-#### `/tone message tag`
+#### `/tag message tag`
+end your message with one of the listed tone tags, other people can even click on the command to see what the tag means
 
-end your message with a chosen tag, so that you don't have to remember all the tone-tags
+## nerdy stuff
+
+don't forget to change the guild id in [main.rs](src/main.rs) if you want to self-host
+
+made by [laralove143](https://github.com/laralove143) with [rust](https://www.rust-lang.org) using [twilight](https://github.com/twilight-rs/twilight) and [sqlite](https://sqlite.org), licensed MIT

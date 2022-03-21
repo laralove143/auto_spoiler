@@ -1,6 +1,6 @@
 [package]
-name = "trigger-warning-bot-discord"
-description = "a discord bot to put possibly triggering words in spoilers"
+name = "auto-spoiler-bot-discord"
+description = "a discord bot that automatically puts possibly triggering words in spoilers"
 version = "0.1.0"
 authors = ["laralove143 <laralove143@icloud.com>"]
 repository = "https://github.com/laralove143/trigger-warning-bot-discord"
