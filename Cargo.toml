@@ -1,0 +1,42 @@
+[package]
+name = "trigger-warning-bot-discord"
+description = "a discord bot to put possibly triggering words in spoilers"
+version = "0.1.0"
+authors = ["laralove143 <laralove143@icloud.com>"]
+repository = "https://github.com/laralove143/trigger-warning-bot-discord"
+license = "MIT"
+edition = "2021"
+keywords = ["discord", "bots"]
+categories = ["http-client"]
+
+[dependencies]
+twilight-gateway = { version = "0.10", default-features = false, features = [
+    "rustls-native-roots",
+    "zlib-simd",
+] }
+twilight-http = { version = "0.10", default-features = false, features = [
+    "decompression",
+    "rustls-native-roots",
+    "trust-dns",
+] }
+twilight-model = { version = "0.10", default-features = false }
+twilight-util = { version = "0.10", default-features = false, features = [
+    "builder",
+] }
+twilight-cache-inmemory = { version = "0.10", features = [
+    "permission-calculator"
+] }
+twilight-interactions = "0.10"
+tokio = { version = "1.17.0", default-features = false, features = [
+    "rt-multi-thread",
+    "macros"
+] }
+sqlx = { version = "0.5", default-features = false, features = [
+    "macros",
+    "runtime-tokio-rustls",
+    "sqlite"
+] }
+futures-util = "0.3.21"
+anyhow = "1.0"
+dashmap = "5.2"
+unicode-segmentation = "1.9"
