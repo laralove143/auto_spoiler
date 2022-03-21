@@ -115,16 +115,13 @@ pub async fn create(
 
     let mut permissions = Vec::new();
     for command in client
-        .set_guild_commands(
-            GUILD_ID,
-            &[
-                Tw::create_command().into(),
-                Tag::create_command().into(),
-                Allow::create_command().into(),
-                CustomWord::create_command().into(),
-                AddDefaultWord::create_command().into(),
-            ],
-        )
+        .set_global_commands(&[
+            Tw::create_command().into(),
+            Tag::create_command().into(),
+            Allow::create_command().into(),
+            CustomWord::create_command().into(),
+            AddDefaultWord::create_command().into(),
+        ])
         .exec()
         .await?
         .model()
