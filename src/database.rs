@@ -9,7 +9,7 @@ use crate::interaction::WordType;
 
 pub async fn new() -> Result<SqlitePool> {
     let db =
-        SqlitePool::connect_with(SqliteConnectOptions::new().filename("tw_bot.sqlite")).await?;
+        SqlitePool::connect_with(SqliteConnectOptions::new().filename("spoiler.sqlite")).await?;
 
     Ok(db)
 }
