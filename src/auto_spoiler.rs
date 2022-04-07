@@ -10,7 +10,11 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
             .cache
             .permissions()
             .in_channel(ctx.user_id, message.channel_id)?
-            .contains(Permissions::MANAGE_MESSAGES | Permissions::MANAGE_WEBHOOKS)
+            .contains(
+                Permissions::VIEW_CHANNEL
+                    | Permissions::MANAGE_MESSAGES
+                    | Permissions::MANAGE_WEBHOOKS,
+            )
     {
         return Ok(());
     }
