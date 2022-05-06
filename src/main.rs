@@ -9,7 +9,7 @@
 
 use std::{env, sync::Arc};
 
-use anyhow::Result;
+use anyhow::{IntoResult, Result};
 use dashmap::DashMap;
 use futures_util::StreamExt;
 use sqlx::SqlitePool;
