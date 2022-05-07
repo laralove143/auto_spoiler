@@ -37,6 +37,6 @@ sqlx = { version = "0.5", default-features = false, features = [
     "sqlite"
 ] }
 futures-util = "0.3.21"
-anyhow = { git = "https://github.com/laralove143/anyhow" }
+anyhow = { git = "https://github.com/laralove143/anyhow", features = ["backtrace"] }
 dashmap = "5.2"
 unicode-segmentation = "1.9"
