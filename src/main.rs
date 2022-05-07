@@ -96,9 +96,8 @@ async fn main() -> Result<()> {
         .await?
         .model()
         .await?;
-    let owner_id = application.owner.ok()?.id;
 
-    interaction::create(&http, application.id, owner_id).await?;
+    interaction::create(&http, application.id).await?;
 
     let ctx = Arc::new(ContextInner {
         cache: InMemoryCache::builder()
@@ -108,7 +107,7 @@ async fn main() -> Result<()> {
         webhooks: DashMap::new(),
         user_id: http.current_user().exec().await?.model().await?.id,
         owner_channel_id: http
-            .create_private_channel(owner_id)
+            .create_private_channel(application.owner.ok()?.id)
             .exec()
             .await?
             .model()

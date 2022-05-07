@@ -2,16 +2,10 @@ use anyhow::{bail, Context as _, Result};
 use twilight_http::Client;
 use twilight_interactions::command::{CommandOption, CreateCommand, CreateOption};
 use twilight_model::{
-    application::{
-        command::permissions::{CommandPermissions, CommandPermissionsType},
-        interaction::Interaction,
-    },
+    application::interaction::Interaction,
     channel::message::MessageFlags,
     http::interaction::{InteractionResponse, InteractionResponseType},
-    id::{
-        marker::{ApplicationMarker, UserMarker},
-        Id,
-    },
+    id::{marker::ApplicationMarker, Id},
 };
 use twilight_util::builder::InteractionResponseDataBuilder;
 
@@ -106,42 +100,23 @@ pub async fn handle(ctx: Context, interaction: Interaction) -> Result<()> {
     Ok(())
 }
 
-pub async fn create(
-    http: &Client,
-    application_id: Id<ApplicationMarker>,
-    owner_id: Id<UserMarker>,
-) -> Result<()> {
+pub async fn create(http: &Client, application_id: Id<ApplicationMarker>) -> Result<()> {
     let client = http.interaction(application_id);
 
-    let mut permissions = Vec::new();
-    for command in client
+    client
         .set_global_commands(&[
             Tw::create_command().into(),
             Tag::create_command().into(),
             Allow::create_command().into(),
             CustomWord::create_command().into(),
-            AddDefaultWord::create_command().into(),
         ])
         .exec()
         .await?
         .model()
-        .await?
-    {
-        if !command.default_permission.unwrap_or(true) {
-            permissions.push((
-                command
-                    .id
-                    .context("command doesn't have id attached to it")?,
-                CommandPermissions {
-                    id: CommandPermissionsType::User(owner_id),
-                    permission: true,
-                },
-            ));
-        }
-    }
+        .await?;
 
     client
-        .set_command_permissions(GUILD_ID, &permissions)?
+        .set_guild_commands(GUILD_ID, &[AddDefaultWord::create_command().into()])
         .exec()
         .await?;
 
