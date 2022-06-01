@@ -10,7 +10,6 @@
 use std::{env, sync::Arc};
 
 use anyhow::{IntoResult, Result};
-use dashmap::DashMap;
 use futures_util::StreamExt;
 use sqlx::SqlitePool;
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
@@ -24,15 +23,13 @@ use twilight_model::{
         Id,
     },
 };
-
-use crate::webhooks::CachedWebhook;
+use twilight_webhook::cache::Cache as WebhooksCache;
 
 const GUILD_ID: Id<GuildMarker> = Id::new(903_367_565_349_384_202);
 
 mod auto_spoiler;
 mod database;
 mod interaction;
-mod webhooks;
 
 pub type Context = Arc<ContextInner>;
 
@@ -40,7 +37,7 @@ pub struct ContextInner {
     http: Client,
     cache: InMemoryCache,
     db: SqlitePool,
-    webhooks: DashMap<Id<ChannelMarker>, CachedWebhook>,
+    webhooks: WebhooksCache,
     application_id: Id<ApplicationMarker>,
     user_id: Id<UserMarker>,
     owner_channel_id: Id<ChannelMarker>,
@@ -104,7 +101,7 @@ async fn main() -> Result<()> {
             .resource_types(resource_types)
             .build(),
         db: database::new().await?,
-        webhooks: DashMap::new(),
+        webhooks: WebhooksCache::new(),
         user_id: http.current_user().exec().await?.model().await?.id,
         owner_channel_id: http
             .create_private_channel(application.owner.ok()?.id)
@@ -128,21 +125,37 @@ async fn main() -> Result<()> {
 #[allow(clippy::print_stderr, clippy::wildcard_enum_match_arm)]
 async fn handle_event(ctx: Context, event: Event) {
     ctx.cache.update(&event);
-    let err_ctx = Arc::clone(&ctx);
-    if let Err(err) = match event {
-        Event::InteractionCreate(interaction) => interaction::handle(ctx, interaction.0).await,
-        Event::WebhooksUpdate(update) => webhooks::update(ctx, update.channel_id).await,
-        Event::MessageCreate(message) => auto_spoiler::edit(ctx, (*message).0).await,
-        _ => Ok(()),
-    } {
+    ctx.webhooks.update(&event);
+    if let Err(err) = _handle_event(Arc::clone(&ctx), event).await {
         eprintln!("{err}");
-        if let Err(e) = inform_owner(err_ctx).await {
+        if let Err(e) = inform_owner(&ctx).await {
             eprintln!("informing the owner also failed: {e}");
         }
     }
 }
 
-async fn inform_owner(ctx: Context) -> Result<()> {
+#[allow(clippy::print_stderr, clippy::wildcard_enum_match_arm)]
+async fn _handle_event(ctx: Context, event: Event) -> Result<()> {
+    match event {
+        Event::InteractionCreate(interaction) => interaction::handle(ctx, interaction.0).await?,
+        Event::WebhooksUpdate(update) => {
+            ctx.webhooks
+                .validate(
+                    &ctx.http,
+                    update.channel_id,
+                    ctx.cache
+                        .permissions()
+                        .in_channel(ctx.user_id, update.channel_id)?,
+                )
+                .await?;
+        }
+        Event::MessageCreate(message) => auto_spoiler::edit(ctx, (*message).0).await?,
+        _ => (),
+    }
+    Ok(())
+}
+
+async fn inform_owner(ctx: &Context) -> Result<()> {
     ctx.http
         .create_message(ctx.owner_channel_id)
         .content("there was an error, i printed it")?
