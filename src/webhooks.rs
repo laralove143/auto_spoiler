@@ -51,7 +51,7 @@ pub async fn get(
             Some(webhook) => webhook,
             None => {
                 ctx.http
-                    .create_webhook(channel_id, "tw or tag sender")
+                    .create_webhook(channel_id, "tw or tag sender")?
                     .exec()
                     .await?
                     .model()
@@ -114,7 +114,7 @@ pub async fn send_as_member(
     let mut exec = ctx
         .http
         .execute_webhook(webhook.id, &webhook.token)
-        .username(member.nick.as_ref().unwrap_or(&user.name))
+        .username(member.nick.as_ref().unwrap_or(&user.name))?
         .content(content)?;
 
     if is_thread {

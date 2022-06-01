@@ -10,23 +10,23 @@ keywords = ["discord", "bots"]
 categories = ["http-client"]
 
 [dependencies]
-twilight-gateway = { version = "0.10", default-features = false, features = [
+twilight-gateway = { version = "0.11", default-features = false, features = [
     "rustls-native-roots",
     "zlib-simd",
 ] }
-twilight-http = { version = "0.10", default-features = false, features = [
+twilight-http = { version = "0.11", default-features = false, features = [
     "decompression",
     "rustls-native-roots",
     "trust-dns",
 ] }
-twilight-model = { version = "0.10", default-features = false }
-twilight-util = { version = "0.10", default-features = false, features = [
+twilight-model = { version = "0.11", default-features = false }
+twilight-util = { version = "0.11", default-features = false, features = [
     "builder",
 ] }
-twilight-cache-inmemory = { version = "0.10", features = [
+twilight-cache-inmemory = { version = "0.11", features = [
     "permission-calculator"
 ] }
-twilight-interactions = "0.10"
+twilight-interactions = "0.11"
 tokio = { version = "1.17.0", default-features = false, features = [
     "rt-multi-thread",
     "macros"
