@@ -13,6 +13,7 @@ use anyhow::{IntoResult, Result};
 use futures_util::StreamExt;
 use sqlx::SqlitePool;
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
+use twilight_error::ErrorHandler;
 use twilight_gateway::{Cluster, EventTypeFlags};
 use twilight_http::{client::ClientBuilder, Client};
 use twilight_model::{
@@ -41,6 +42,7 @@ pub struct ContextInner {
     application_id: Id<ApplicationMarker>,
     user_id: Id<UserMarker>,
     owner_channel_id: Id<ChannelMarker>,
+    error_handler: ErrorHandler,
 }
 
 #[tokio::main]
@@ -94,6 +96,19 @@ async fn main() -> Result<()> {
         .model()
         .await?;
 
+    let owner_channel_id = http
+        .create_private_channel(application.owner.ok()?.id)
+        .exec()
+        .await?
+        .model()
+        .await?
+        .id;
+
+    let mut error_handler = ErrorHandler::new();
+    error_handler
+        .channel(owner_channel_id)
+        .file("auto_spoiler_bot_errors.txt".into());
+
     interaction::create(&http, application.id).await?;
 
     let ctx = Arc::new(ContextInner {
@@ -103,14 +118,9 @@ async fn main() -> Result<()> {
         db: database::new().await?,
         webhooks: WebhooksCache::new(),
         user_id: http.current_user().exec().await?.model().await?.id,
-        owner_channel_id: http
-            .create_private_channel(application.owner.ok()?.id)
-            .exec()
-            .await?
-            .model()
-            .await?
-            .id,
         application_id: application.id,
+        owner_channel_id,
+        error_handler,
         http,
     });
 
@@ -127,10 +137,7 @@ async fn handle_event(ctx: Context, event: Event) {
     ctx.cache.update(&event);
     ctx.webhooks.update(&event);
     if let Err(err) = _handle_event(Arc::clone(&ctx), event).await {
-        eprintln!("{err}");
-        if let Err(e) = inform_owner(&ctx).await {
-            eprintln!("informing the owner also failed: {e}");
-        }
+        ctx.error_handler.handle(&ctx.http, err).await;
     }
 }
 
@@ -152,15 +159,5 @@ async fn _handle_event(ctx: Context, event: Event) -> Result<()> {
         Event::MessageCreate(message) => auto_spoiler::edit(ctx, (*message).0).await?,
         _ => (),
     }
-    Ok(())
-}
-
-async fn inform_owner(ctx: &Context) -> Result<()> {
-    ctx.http
-        .create_message(ctx.owner_channel_id)
-        .content("there was an error, i printed it")?
-        .exec()
-        .await?;
-
     Ok(())
 }
