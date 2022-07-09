@@ -17,14 +17,19 @@ use twilight_error::ErrorHandler;
 use twilight_gateway::{Cluster, EventTypeFlags};
 use twilight_http::{client::ClientBuilder, Client};
 use twilight_model::{
-    channel::message::AllowedMentions,
+    channel::{message::AllowedMentions, Channel},
     gateway::{event::Event, Intents},
+    guild::{PartialMember, Permissions},
     id::{
-        marker::{ApplicationMarker, ChannelMarker, UserMarker},
+        marker::{ApplicationMarker, ChannelMarker, GuildMarker, UserMarker},
         Id,
     },
+    user::User,
 };
-use twilight_webhook::cache::WebhooksCache;
+use twilight_webhook::{
+    cache::WebhooksCache,
+    util::{MinimalMember, MinimalWebhook},
+};
 
 mod auto_spoiler;
 mod database;
@@ -158,4 +163,51 @@ async fn _handle_event(ctx: Context, event: Event) -> Result<()> {
         _ => (),
     }
     Ok(())
+}
+
+async fn webhook(
+    ctx: &Context,
+    member: &PartialMember,
+    user: &User,
+    guild_id: Id<GuildMarker>,
+    channel_id: Id<ChannelMarker>,
+    thread_id: Option<Id<ChannelMarker>>,
+    content: &str,
+) -> Result<()> {
+    MinimalWebhook::try_from(
+        &*ctx
+            .webhooks
+            .get_infallible(&ctx.http, channel_id, "tw or tag sender")
+            .await?,
+    )?
+    .execute_as_member(
+        &ctx.http,
+        thread_id,
+        &MinimalMember::from_partial_member(member, Some(guild_id), user),
+    )?
+    .content(content)?
+    .exec()
+    .await?;
+
+    Ok(())
+}
+
+fn has_permissions(
+    ctx: &Context,
+    channel_id: Id<ChannelMarker>,
+    permissions: Permissions,
+) -> Result<bool> {
+    Ok(ctx
+        .cache
+        .permissions()
+        .in_channel(ctx.user_id, channel_id)?
+        .contains(permissions))
+}
+
+fn channel_pair(channel: &Channel) -> Result<(Id<ChannelMarker>, Option<Id<ChannelMarker>>)> {
+    Ok(if channel.kind.is_thread() {
+        (channel.parent_id.ok()?, Some(channel.id))
+    } else {
+        (channel.id, None)
+    })
 }

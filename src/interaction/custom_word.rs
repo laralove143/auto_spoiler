@@ -1,10 +1,6 @@
-use anyhow::{Context as _, Result};
+use anyhow::{IntoResult, Result};
 use twilight_interactions::command::{CommandModel, CreateCommand};
-use twilight_model::{
-    application::interaction::application_command::CommandData,
-    guild::{PartialMember, Permissions},
-    id::{marker::GuildMarker, Id},
-};
+use twilight_model::{application::interaction::ApplicationCommand, guild::Permissions};
 
 use crate::{database, Context};
 
@@ -39,23 +35,16 @@ pub enum CustomWord {
     Remove(Remove),
 }
 
-pub async fn run(
-    ctx: &Context,
-    data: CommandData,
-    guild_id: Id<GuildMarker>,
-    member: PartialMember,
-) -> Result<&'static str> {
-    if !member
-        .permissions
-        .context("member in interaction doesn't have permissions")?
-        .contains(Permissions::MANAGE_GUILD)
-    {
+pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static str> {
+    let member = command.member.ok()?;
+    if !member.permissions.ok()?.contains(Permissions::MANAGE_GUILD) {
         return Ok("you need the manage guild permission to use this");
     }
+    let guild_id = command.guild_id.ok()?;
 
-    let command = CustomWord::from_interaction(data.into())?;
+    let option = CustomWord::from_interaction(command.data.into())?;
 
-    match command {
+    match option {
         CustomWord::Add(add) => {
             if database::all_words(&ctx.db, guild_id)
                 .await?
@@ -65,9 +54,7 @@ pub async fn run(
             }
 
             if add.suggest {
-                let user = member
-                    .user
-                    .context("member in interaction doesn't have user")?;
+                let user = member.user.ok()?;
 
                 ctx.http
                     .create_message(ctx.owner_channel_id)

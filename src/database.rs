@@ -112,32 +112,3 @@ pub async fn add_default_word(db: &SqlitePool, word_type: WordType, word: &str) 
 
     Ok(())
 }
-
-#[allow(clippy::integer_arithmetic)]
-pub async fn set_guild_settings(
-    db: &SqlitePool,
-    guild_id: Id<GuildMarker>,
-    word_type: Option<WordType>,
-) -> Result<()> {
-    let id: i64 = guild_id.get().try_into()?;
-
-    match word_type {
-        Some(kind) => match kind {
-            WordType::Swear => query!(
-                "INSERT OR REPLACE INTO guild_settings (guild_id, swear_words) VALUES (?, ?)",
-                id,
-                false
-            ),
-            WordType::Trigger => query!(
-                "INSERT OR REPLACE INTO guild_settings (guild_id, trigger_words) VALUES (?, ?)",
-                id,
-                false
-            ),
-        },
-        None => query!("DELETE FROM guild_settings WHERE guild_id=?", id),
-    }
-    .execute(db)
-    .await?;
-
-    Ok(())
-}

@@ -1,13 +1,8 @@
-use anyhow::{Context as _, IntoResult, Result};
+use anyhow::{IntoResult, Result};
 use twilight_interactions::command::{CommandModel, CommandOption, CreateCommand, CreateOption};
-use twilight_model::{
-    application::interaction::application_command::CommandData,
-    guild::{PartialMember, Permissions},
-    id::{marker::ChannelMarker, Id},
-};
-use twilight_webhook::util::{MinimalMember, MinimalWebhook};
+use twilight_model::{application::interaction::ApplicationCommand, guild::Permissions};
 
-use crate::Context;
+use crate::{channel_pair, has_permissions, webhook, Context};
 
 #[derive(CreateOption, CommandOption)]
 pub enum Tone {
@@ -48,50 +43,25 @@ pub struct Tag {
     tag: Tone,
 }
 
-pub async fn run(
-    ctx: &Context,
-    data: CommandData,
-    command_channel_id: Id<ChannelMarker>,
-    member: PartialMember,
-) -> Result<&'static str> {
-    if !ctx
-        .cache
-        .permissions()
-        .in_channel(ctx.user_id, command_channel_id)?
-        .contains(Permissions::MANAGE_WEBHOOKS)
-    {
-        return Ok("i need the manage webhooks permission in this channel for that :(");
+pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static str> {
+    if !has_permissions(ctx, command.channel_id, Permissions::MANAGE_WEBHOOKS)? {
+        return Ok("i need `manage webhooks` permissions for this");
     }
 
-    let options = Tag::from_interaction(data.into())?;
-    let content = format!("{} {}", options.message, options.tag.value());
-    let channel = ctx.cache.channel(command_channel_id).ok()?;
-    let (channel_id, thread_id) = if channel.kind.is_thread() {
-        (channel.parent_id.ok()?, Some(channel.id))
-    } else {
-        (channel.id, None)
-    };
-    let webhook = ctx
-        .webhooks
-        .get_infallible(&ctx.http, channel_id, "tw or tag sender")
-        .await?;
+    let options = Tag::from_interaction(command.data.into())?;
 
-    MinimalWebhook::try_from(&*webhook)?
-        .execute_as_member(
-            &ctx.http,
-            thread_id,
-            &MinimalMember::from_partial_member(
-                &member,
-                Some(channel.guild_id.ok()?),
-                member
-                    .user
-                    .as_ref()
-                    .context("member doesn't have user info")?,
-            ),
-        )?
-        .content(&content)?
-        .exec()
-        .await?;
+    let (channel_id, thread_id) = channel_pair(&*ctx.cache.channel(command.channel_id).ok()?)?;
+    let member = command.member.ok()?;
+    webhook(
+        ctx,
+        &member,
+        member.user.as_ref().ok()?,
+        command.guild_id.ok()?,
+        channel_id,
+        thread_id,
+        &format!("{} {}", options.message, options.tag.value()),
+    )
+    .await?;
 
-    Ok("done")
+    Ok("done!")
 }
