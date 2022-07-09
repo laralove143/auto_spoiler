@@ -20,13 +20,11 @@ use twilight_model::{
     channel::message::AllowedMentions,
     gateway::{event::Event, Intents},
     id::{
-        marker::{ApplicationMarker, ChannelMarker, GuildMarker, UserMarker},
+        marker::{ApplicationMarker, ChannelMarker, UserMarker},
         Id,
     },
 };
-use twilight_webhook::cache::Cache as WebhooksCache;
-
-const GUILD_ID: Id<GuildMarker> = Id::new(903_367_565_349_384_202);
+use twilight_webhook::cache::WebhooksCache;
 
 mod auto_spoiler;
 mod database;

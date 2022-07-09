@@ -13,7 +13,7 @@ use crate::{
     interaction::{
         add_default_word::AddDefaultWord, allow::Allow, custom_word::CustomWord, tag::Tag, tw::Tw,
     },
-    Context, GUILD_ID,
+    Context,
 };
 
 mod add_default_word;
