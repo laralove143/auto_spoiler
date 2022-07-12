@@ -11,7 +11,7 @@ use std::{env, sync::Arc};
 
 use anyhow::{IntoResult, Result};
 use futures_util::StreamExt;
-use sqlx::SqlitePool;
+use sqlx::PgPool;
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
 use twilight_error::ErrorHandler;
 use twilight_gateway::{Cluster, EventTypeFlags};
@@ -40,7 +40,7 @@ pub type Context = Arc<ContextInner>;
 pub struct ContextInner {
     http: Client,
     cache: InMemoryCache,
-    db: SqlitePool,
+    db: PgPool,
     webhooks: WebhooksCache,
     application_id: Id<ApplicationMarker>,
     user_id: Id<UserMarker>,

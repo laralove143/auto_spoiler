@@ -2,7 +2,7 @@ use std::mem;
 
 use anyhow::{bail, Result};
 use twilight_http::Client;
-use twilight_interactions::command::{CommandOption, CreateCommand, CreateOption};
+use twilight_interactions::command::CreateCommand;
 use twilight_model::{
     application::interaction::Interaction,
     channel::message::MessageFlags,
@@ -12,22 +12,16 @@ use twilight_model::{
 use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{
-    interaction::{add_default_word::AddDefaultWord, custom_word::CustomWord, tag::Tag, tw::Tw},
+    interaction::{
+        add_custom_word::CustomWord, add_default_word::AddDefaultWord, tag::Tag, tw::Tw,
+    },
     Context,
 };
 
+mod add_custom_word;
 mod add_default_word;
-mod custom_word;
 mod tag;
 mod tw;
-
-#[derive(CreateOption, CommandOption)]
-pub enum WordType {
-    #[option(name = "swear-words", value = "swear-words")]
-    Swear,
-    #[option(name = "trigger-words", value = "trigger-words")]
-    Trigger,
-}
 
 #[allow(clippy::wildcard_enum_match_arm)]
 pub async fn handle(ctx: Context, interaction: Interaction) -> Result<()> {
@@ -43,7 +37,7 @@ pub async fn handle(ctx: Context, interaction: Interaction) -> Result<()> {
     let reply = match command.data.name.as_str() {
         "tw" => tw::run(&ctx, command).await?,
         "tag" => tag::run(&ctx, command).await?,
-        "custom_word" => custom_word::run(&ctx, command).await?,
+        "custom_word" => add_custom_word::run(&ctx, command).await?,
         "add_default_word" => add_default_word::run(&ctx, command.data).await?,
         _ => bail!("unknown command: {command:#?}"),
     };
