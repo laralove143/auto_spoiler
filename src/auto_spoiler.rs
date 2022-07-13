@@ -9,12 +9,10 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
     }
 
     let guild_id = message.guild_id.ok()?;
-    let filter_words = database::words(&ctx.db, guild_id).await?;
     let mut content = message.content.to_lowercase();
-    for word in filter_words {
-        content = content.replace(&word.word, &format!("||{}||", word.word));
-    }
-    if content == message.content.to_lowercase() {
+    let mut filter_words = database::words(&ctx.db, guild_id).await?;
+    filter_words.retain(|word| content.contains(&word.word));
+    if filter_words.is_empty() {
         return Ok(());
     }
 
@@ -34,6 +32,10 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
                 .await?;
         }
         return Ok(());
+    }
+
+    for word in filter_words {
+        content = content.replace(&word.word, &format!("||{}||", word.word));
     }
 
     let channel = ctx.cache.channel(message.channel_id).ok()?;
