@@ -26,7 +26,11 @@ pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static 
     let options = CustomWord::from_interaction(command.data.into())?;
     let word = options.word.to_lowercase();
 
-    if database::words(&ctx.db, guild_id).await?.contains(&word) {
+    if database::words(&ctx.db, guild_id)
+        .await?
+        .iter()
+        .any(|w| w.word == word)
+    {
         return Ok("this word is already added!");
     }
 

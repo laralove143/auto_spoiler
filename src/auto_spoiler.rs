@@ -1,6 +1,5 @@
 use anyhow::{IntoResult, Result};
 use twilight_model::{channel::Message, guild::Permissions};
-use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{channel_pair, database, webhook, Context};
 
@@ -10,21 +9,12 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
     }
 
     let guild_id = message.guild_id.ok()?;
-
     let filter_words = database::words(&ctx.db, guild_id).await?;
-    let mut content = String::with_capacity(message.content.len());
-    let mut edited = false;
-    for word in message.content.to_lowercase().split_word_bounds() {
-        if filter_words.contains(word) {
-            edited = true;
-            content.push_str("||");
-            content.push_str(word);
-            content.push_str("||");
-        } else {
-            content.push_str(word);
-        }
+    let mut content = message.content.to_lowercase();
+    for word in filter_words {
+        content = content.replace(&word.word, &format!("||{}||", word.word));
     }
-    if !edited {
+    if content == message.content.to_lowercase() {
         return Ok(());
     }
 
