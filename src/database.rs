@@ -1,5 +1,5 @@
 use anyhow::Result;
-use sqlx::{query, query_as, PgPool};
+use sqlx::{query_file, query_file_as, PgPool};
 use twilight_model::id::{marker::GuildMarker, Id};
 
 pub struct Word {
@@ -14,26 +14,17 @@ pub async fn new() -> Result<PgPool> {
 
 #[allow(clippy::integer_arithmetic, clippy::panic)]
 pub async fn words(db: &PgPool, guild_id: Id<GuildMarker>) -> Result<Vec<Word>> {
-    Ok(query_as!(
-        Word,
-        r#"SELECT id as "id!", guild_id, word as "word!"
-        FROM words
-        WHERE guild_id = $1
-        UNION ALL
-        SELECT id, guild_id, word
-        FROM words
-        WHERE guild_id IS NULL
-          AND id NOT IN (SELECT word_id FROM allowed_words WHERE guild_id = $1);"#,
-        encode(guild_id)
+    Ok(
+        query_file_as!(Word, "src/database/query_words.sql", encode(guild_id))
+            .fetch_all(db)
+            .await?,
     )
-    .fetch_all(db)
-    .await?)
 }
 
 #[allow(clippy::integer_arithmetic, clippy::panic)]
 pub async fn add_custom_word(db: &PgPool, guild_id: Id<GuildMarker>, word: String) -> Result<()> {
-    query!(
-        "INSERT INTO words (guild_id, word) VALUES ($1, $2)",
+    query_file!(
+        "src/database/insert_custom_word.sql",
         encode(guild_id),
         word
     )
@@ -45,7 +36,7 @@ pub async fn add_custom_word(db: &PgPool, guild_id: Id<GuildMarker>, word: Strin
 
 #[allow(clippy::integer_arithmetic, clippy::panic)]
 pub async fn add_default_word(db: &PgPool, word: String) -> Result<()> {
-    query!("INSERT INTO words (word) VALUES ($1)", word)
+    query_file!("src/database/insert_default_word.sql", word)
         .execute(db)
         .await?;
 
