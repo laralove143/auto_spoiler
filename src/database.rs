@@ -16,14 +16,32 @@ pub async fn new() -> Result<PgPool> {
 pub async fn words(db: &PgPool, guild_id: Id<GuildMarker>) -> Result<Vec<Word>> {
     Ok(query_as!(
         Word,
-        r#"SELECT id as "id!", guild_id, word as "word!"
-        FROM words
-        WHERE guild_id = $1
+        r#"
+        SELECT
+            id AS "id!",
+            guild_id,
+            word AS "word!"
+        FROM
+            words
+        WHERE
+            guild_id = $1
         UNION ALL
-        SELECT id, guild_id, word
-        FROM words
-        WHERE guild_id IS NULL
-          AND id NOT IN (SELECT word_id FROM allowed_words WHERE guild_id = $1);"#,
+        SELECT
+            id,
+            guild_id,
+            word
+        FROM
+            words
+        WHERE
+            guild_id IS NULL
+            AND id NOT IN (
+                SELECT
+                    word_id
+                FROM
+                    allowed_words
+                WHERE
+                    guild_id = $1);
+        "#,
         encode(guild_id)
     )
     .fetch_all(db)
@@ -33,7 +51,10 @@ pub async fn words(db: &PgPool, guild_id: Id<GuildMarker>) -> Result<Vec<Word>> 
 #[allow(clippy::integer_arithmetic, clippy::panic)]
 pub async fn add_custom_word(db: &PgPool, guild_id: Id<GuildMarker>, word: String) -> Result<()> {
     query!(
-        "INSERT INTO words (guild_id, word) VALUES ($1, $2)",
+        r#"
+        INSERT INTO words (guild_id, word)
+            VALUES ($1, $2)
+        "#,
         encode(guild_id),
         word
     )
@@ -45,9 +66,15 @@ pub async fn add_custom_word(db: &PgPool, guild_id: Id<GuildMarker>, word: Strin
 
 #[allow(clippy::integer_arithmetic, clippy::panic)]
 pub async fn add_default_word(db: &PgPool, word: String) -> Result<()> {
-    query!("INSERT INTO words (word) VALUES ($1)", word)
-        .execute(db)
-        .await?;
+    query!(
+        r#"
+        INSERT INTO words (word)
+            VALUES ($1)
+        "#,
+        word
+    )
+    .execute(db)
+    .await?;
 
     Ok(())
 }
