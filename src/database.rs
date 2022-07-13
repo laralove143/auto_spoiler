@@ -9,7 +9,40 @@ pub struct Word {
 }
 
 pub async fn new() -> Result<PgPool> {
-    Ok(PgPool::connect("postgres://spoiler").await?)
+    let db = PgPool::connect("postgres://spoiler").await?;
+
+    query!(
+        r#"
+        CREATE TABLE IF NOT EXISTS words (
+            id serial PRIMARY KEY,
+            guild_id bigint,
+            word text NOT NULL
+        );
+        "#
+    )
+    .execute(&db)
+    .await?;
+
+    query!(
+        r#"
+        CREATE INDEX IF NOT EXISTS words_guild_id_index ON words (guild_id);
+        "#
+    )
+    .execute(&db)
+    .await?;
+
+    query!(
+        r#"
+        CREATE TABLE IF NOT EXISTS allowed_words (
+            guild_id bigint NOT NULL PRIMARY KEY,
+            word_id smallint NOT NULL
+        );
+        "#
+    )
+    .execute(&db)
+    .await?;
+
+    Ok(db)
 }
 
 #[allow(clippy::integer_arithmetic, clippy::panic)]
