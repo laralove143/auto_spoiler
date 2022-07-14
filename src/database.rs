@@ -3,8 +3,7 @@ use sqlx::{query, query_as, PgPool};
 use twilight_model::id::{marker::GuildMarker, Id};
 
 pub struct Word {
-    id: i32,
-    guild_id: Option<i64>,
+    pub id: i32,
     pub word: String,
 }
 
@@ -52,7 +51,6 @@ pub async fn words(db: &PgPool, guild_id: Id<GuildMarker>) -> Result<Vec<Word>> 
         r#"
         SELECT
             id AS "id!",
-            guild_id,
             word AS "word!"
         FROM
             words
@@ -61,7 +59,6 @@ pub async fn words(db: &PgPool, guild_id: Id<GuildMarker>) -> Result<Vec<Word>> 
         UNION ALL
         SELECT
             id,
-            guild_id,
             word
         FROM
             words
