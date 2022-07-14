@@ -56,21 +56,15 @@ pub async fn words(db: &PgPool, guild_id: Id<GuildMarker>) -> Result<Vec<Word>> 
             words
         WHERE
             guild_id = $1
-        UNION ALL
-        SELECT
-            id,
-            word
-        FROM
-            words
-        WHERE
-            guild_id IS NULL
-            AND id NOT IN (
+            OR guild_id IS NULL
+            AND NOT EXISTS (
                 SELECT
-                    word_id
+                    1
                 FROM
                     allowed_words
                 WHERE
-                    guild_id = $1);
+                    guild_id = $1
+                    AND word_id = id);
         "#,
         encode(guild_id)
     )
