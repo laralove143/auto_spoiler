@@ -6,7 +6,7 @@ use crate::{database, Context};
 
 #[derive(CommandModel, CreateCommand)]
 #[command(name = "add_custom_word", desc = "add your own word to censor")]
-pub struct CustomWord {
+pub struct AddCustomWord {
     #[command(name = "word", desc = "the word to add")]
     word: String,
     #[command(
@@ -23,7 +23,7 @@ pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static 
     }
     let guild_id = command.guild_id.ok()?;
 
-    let options = CustomWord::from_interaction(command.data.into())?;
+    let options = AddCustomWord::from_interaction(command.data.into())?;
     let word = options.word.to_lowercase();
 
     if database::words(&ctx.db, guild_id)

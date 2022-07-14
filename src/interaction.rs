@@ -13,7 +13,7 @@ use twilight_util::builder::InteractionResponseDataBuilder;
 
 use crate::{
     interaction::{
-        add_custom_word::CustomWord, add_default_word::AddDefaultWord, tag::Tag, tw::Tw,
+        add_custom_word::AddCustomWord, add_default_word::AddDefaultWord, tag::Tag, tw::Tw,
     },
     Context,
 };
