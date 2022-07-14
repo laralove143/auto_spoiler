@@ -38,10 +38,10 @@ async fn handle_command(ctx: &Context, mut command: ApplicationCommand) -> Resul
     let token = mem::take(&mut command.token);
 
     let reply = match command.data.name.as_str() {
-        "tw" => tw::run(&ctx, command).await?,
-        "tag" => tag::run(&ctx, command).await?,
-        "custom_word" => add_custom_word::run(&ctx, command).await?,
-        "add_default_word" => add_default_word::run(&ctx, command.data).await?,
+        "tw" => tw::run(ctx, command).await?,
+        "tag" => tag::run(ctx, command).await?,
+        "add_custom_word" => add_custom_word::run(ctx, command).await?,
+        "add_default_word" => add_default_word::run(ctx, command.data).await?,
         _ => bail!("unknown command: {command:#?}"),
     };
 
