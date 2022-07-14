@@ -17,6 +17,7 @@ use twilight_error::ErrorHandler;
 use twilight_gateway::{Cluster, EventTypeFlags};
 use twilight_http::{client::ClientBuilder, Client};
 use twilight_model::{
+    application::component::Component,
     channel::{message::AllowedMentions, Channel},
     gateway::{event::Event, Intents},
     guild::{PartialMember, Permissions},
@@ -165,6 +166,7 @@ async fn _handle_event(ctx: Context, event: Event) -> Result<()> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn webhook(
     ctx: &Context,
     member: &PartialMember,
@@ -173,6 +175,7 @@ async fn webhook(
     channel_id: Id<ChannelMarker>,
     thread_id: Option<Id<ChannelMarker>>,
     content: &str,
+    components: &[Component],
 ) -> Result<()> {
     MinimalWebhook::try_from(
         &*ctx
@@ -186,6 +189,7 @@ async fn webhook(
         &MinimalMember::from_partial_member(member, Some(guild_id), user),
     )?
     .content(content)?
+    .components(components)?
     .exec()
     .await?;
 

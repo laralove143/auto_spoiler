@@ -4,7 +4,7 @@ use anyhow::{bail, Result};
 use twilight_http::Client;
 use twilight_interactions::command::CreateCommand;
 use twilight_model::{
-    application::interaction::Interaction,
+    application::interaction::{ApplicationCommand, Interaction, MessageComponentInteraction},
     channel::message::MessageFlags,
     http::interaction::{InteractionResponse, InteractionResponseType},
     id::{marker::ApplicationMarker, Id},
@@ -20,17 +20,20 @@ use crate::{
 
 mod add_custom_word;
 mod add_default_word;
+mod allow;
 mod tag;
 mod tw;
 
 #[allow(clippy::wildcard_enum_match_arm)]
 pub async fn handle(ctx: Context, interaction: Interaction) -> Result<()> {
-    let client = ctx.http.interaction(ctx.application_id);
-
-    let mut command = match interaction {
-        Interaction::ApplicationCommand(cmd) => *cmd,
+    match interaction {
+        Interaction::ApplicationCommand(cmd) => handle_command(&ctx, *cmd).await,
+        Interaction::MessageComponent(component) => handle_component(&ctx, *component).await,
         _ => bail!("unknown interaction: {interaction:#?}"),
-    };
+    }
+}
+
+async fn handle_command(ctx: &Context, mut command: ApplicationCommand) -> Result<()> {
     let command_id = command.id;
     let token = mem::take(&mut command.token);
 
@@ -42,7 +45,8 @@ pub async fn handle(ctx: Context, interaction: Interaction) -> Result<()> {
         _ => bail!("unknown command: {command:#?}"),
     };
 
-    client
+    ctx.http
+        .interaction(ctx.application_id)
         .create_response(
             command_id,
             &token,
@@ -56,6 +60,21 @@ pub async fn handle(ctx: Context, interaction: Interaction) -> Result<()> {
                 ),
             },
         )
+        .exec()
+        .await?;
+
+    Ok(())
+}
+
+async fn handle_component(ctx: &Context, mut component: MessageComponentInteraction) -> Result<()> {
+    let component_id = component.id;
+    let token = mem::take(&mut component.token);
+
+    let response = allow::run(ctx, component).await?;
+
+    ctx.http
+        .interaction(ctx.application_id)
+        .create_response(component_id, &token, &response)
         .exec()
         .await?;
 

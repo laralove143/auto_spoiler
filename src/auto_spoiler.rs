@@ -1,5 +1,9 @@
 use anyhow::{IntoResult, Result};
-use twilight_model::{channel::Message, guild::Permissions};
+use twilight_model::{
+    application::component::{button::ButtonStyle, ActionRow, Button, Component},
+    channel::Message,
+    guild::Permissions,
+};
 
 use crate::{channel_pair, database, webhook, Context};
 
@@ -33,6 +37,20 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
         }
         return Ok(());
     }
+    let components = if filter_words.len() == 1 {
+        vec![Component::ActionRow(ActionRow {
+            components: vec![Component::Button(Button {
+                custom_id: Some(filter_words.first().ok()?.id.to_string()),
+                label: Some("allow this word (moderator only)".to_owned()),
+                style: ButtonStyle::Danger,
+                disabled: false,
+                emoji: None,
+                url: None,
+            })],
+        })]
+    } else {
+        vec![]
+    };
 
     for word in filter_words {
         content = content.replace(&word.word, &format!("||{}||", word.word));
@@ -49,6 +67,7 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
         channel_id,
         thread_id,
         &content,
+        &components,
     )
     .await?;
 

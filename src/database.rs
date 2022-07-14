@@ -103,6 +103,21 @@ pub async fn add_default_word(db: &PgPool, word: String) -> Result<()> {
     Ok(())
 }
 
+pub async fn delete_word(db: &PgPool, id: i32) -> Result<()> {
+    #[allow(clippy::panic, clippy::integer_arithmetic)]
+    query!(
+        r#"
+        DELETE FROM words
+        WHERE id = $1
+        "#,
+        id
+    )
+    .execute(db)
+    .await?;
+
+    Ok(())
+}
+
 #[allow(clippy::cast_possible_wrap, clippy::as_conversions)]
 const fn encode<T>(id: Id<T>) -> i64 {
     id.get() as i64

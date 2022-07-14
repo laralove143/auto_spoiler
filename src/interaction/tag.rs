@@ -60,6 +60,7 @@ pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static 
         channel_id,
         thread_id,
         &format!("{} {}", options.message, options.tag.value()),
+        &[],
     )
     .await?;
 

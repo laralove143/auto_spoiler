@@ -33,6 +33,7 @@ pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static 
         channel_id,
         thread_id,
         &format!("tw {} ||{}||", options.tw_type, options.message),
+        &[],
     )
     .await?;
 
