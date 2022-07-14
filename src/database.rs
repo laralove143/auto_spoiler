@@ -34,7 +34,7 @@ pub async fn new() -> Result<PgPool> {
         r#"
         CREATE TABLE IF NOT EXISTS allowed_words (
             guild_id bigint NOT NULL PRIMARY KEY,
-            word_id smallint NOT NULL
+            word_id int NOT NULL
         );
         "#
     )
