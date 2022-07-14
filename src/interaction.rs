@@ -84,24 +84,21 @@ async fn handle_component(ctx: &Context, mut component: MessageComponentInteract
 pub async fn create(http: &Client, application_id: Id<ApplicationMarker>) -> Result<()> {
     let client = http.interaction(application_id);
 
-    // client
-    //     .set_global_commands(&[
-    //         Tw::create_command().into(),
-    //         Tag::create_command().into(),
-    //         CustomWord::create_command().into(),
-    //     ])
-    //     .exec()
-    //     .await?;
+    client
+        .set_global_commands(&[
+            Tw::create_command().into(),
+            Tag::create_command().into(),
+            AddCustomWord::create_command().into(),
+        ])
+        .exec()
+        .await?
+        .model()
+        .await?;
 
     client
         .set_guild_commands(
             env!("TEST_GUILD_ID").parse()?,
-            &[
-                AddDefaultWord::create_command().into(),
-                Tw::create_command().into(),
-                Tag::create_command().into(),
-                CustomWord::create_command().into(),
-            ],
+            &[AddDefaultWord::create_command().into()],
         )
         .exec()
         .await?;
