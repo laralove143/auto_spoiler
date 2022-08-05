@@ -111,7 +111,7 @@ async fn main() -> Result<()> {
     let mut error_handler = ErrorHandler::new();
     error_handler
         .channel(owner_channel_id)
-        .file("auto_spoiler_bot_errors.txt".into());
+        .file("spoiler_bot_errors.txt".into());
 
     interaction::create(&http, application.id).await?;
 

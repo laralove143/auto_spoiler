@@ -8,7 +8,7 @@ pub struct Word {
 }
 
 pub async fn new() -> Result<PgPool> {
-    let db = PgPool::connect("postgres://localhost/spoiler").await?;
+    let db = PgPool::connect("postgres://localhost/spoiler_bot").await?;
 
     query!(
         r#"
