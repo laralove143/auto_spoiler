@@ -38,6 +38,32 @@ don't forget to change the guild id in [main.rs](src/main.rs) if you want to sel
 
 made by [laralove143] with [rust] using [twilight] and [sqlite], licensed MIT
 
+## terms of service
+
+- *"i" refers to Lara Kayaalp, the developer of auto spoiler*
+- *"you" refers to all users of the bot*
+
+### privacy
+
+- custom words are saved and only used for the bot's functionality
+- no other data is saved anywhere
+
+### disclaimers
+
+- the webhooks the bot executes copy your message's content, nickname and avatar
+- i am not responsible for this copied data
+- i am the sole owner and developer of this bot
+- the hosted application is built directly from this repo
+
+### self-hosting
+
+these clauses override all other licenses:
+
+- *"you" refers to the self-hoster of the bot*
+- you may not advertise the self-hosted bot, such as in app directory or on websites such as top.gg
+- the self-hosted bot may not be in over 5 guilds
+- you must direct the feedback/support requests to me
+
 [laralove143]: https://github.com/laralove143
 [rust]: https://www.rust-lang.org
 [twilight]: https://github.com/twilight-rs/twilight
