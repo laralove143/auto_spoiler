@@ -49,6 +49,8 @@ pub struct ContextInner {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenvy::dotenv()?;
+
     let intents = Intents::GUILDS
         | Intents::GUILD_WEBHOOKS
         | Intents::GUILD_MESSAGES
