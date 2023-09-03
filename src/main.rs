@@ -117,7 +117,7 @@ async fn main() -> Result<()> {
         cache: InMemoryCache::builder()
             .resource_types(resource_types)
             .build(),
-        db: database::new().await?,
+        db: PgPool::connect(&env::var("DATABASE_URL")?).await?,
         webhooks: WebhooksCache::new(),
         user_id: http.current_user().exec().await?.model().await?.id,
         application_id: application.id,

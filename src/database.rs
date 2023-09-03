@@ -7,43 +7,6 @@ pub struct Word {
     pub word: String,
 }
 
-pub async fn new() -> Result<PgPool> {
-    let db = PgPool::connect("postgres://localhost/spoiler_bot").await?;
-
-    query!(
-        r#"
-        CREATE TABLE IF NOT EXISTS words (
-            id serial PRIMARY KEY,
-            guild_id bigint,
-            word text NOT NULL
-        );
-        "#
-    )
-    .execute(&db)
-    .await?;
-
-    query!(
-        r#"
-        CREATE INDEX IF NOT EXISTS words_guild_id_index ON words (guild_id);
-        "#
-    )
-    .execute(&db)
-    .await?;
-
-    query!(
-        r#"
-        CREATE TABLE IF NOT EXISTS allowed_words (
-            guild_id bigint NOT NULL PRIMARY KEY,
-            word_id int NOT NULL
-        );
-        "#
-    )
-    .execute(&db)
-    .await?;
-
-    Ok(db)
-}
-
 #[allow(clippy::integer_arithmetic, clippy::panic)]
 pub async fn words(db: &PgPool, guild_id: Id<GuildMarker>) -> Result<Vec<Word>> {
     Ok(query_as!(
