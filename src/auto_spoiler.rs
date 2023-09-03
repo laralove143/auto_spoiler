@@ -1,4 +1,4 @@
-use anyhow::{IntoResult, Result};
+use anyhow::{Context as _, Result};
 use twilight_model::{
     application::component::{button::ButtonStyle, ActionRow, Button, Component},
     channel::Message,
@@ -12,7 +12,9 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
         return Ok(());
     }
 
-    let guild_id = message.guild_id.ok()?;
+    let guild_id = message
+        .guild_id
+        .context("message doesn't have a guild id")?;
     let mut content = message.content.to_lowercase();
     let mut filter_words = database::words(&ctx.db, guild_id).await?;
     filter_words.retain(|word| content.contains(&word.word));
@@ -40,7 +42,13 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
     let components = if filter_words.len() == 1 {
         vec![Component::ActionRow(ActionRow {
             components: vec![Component::Button(Button {
-                custom_id: Some(filter_words.first().ok()?.id.to_string()),
+                custom_id: Some(
+                    filter_words
+                        .first()
+                        .context("filter words is empty")?
+                        .id
+                        .to_string(),
+                ),
                 label: Some("allow this word (moderator only)".to_owned()),
                 style: ButtonStyle::Danger,
                 disabled: false,
@@ -56,14 +64,19 @@ pub async fn edit(ctx: Context, message: Message) -> Result<()> {
         content = content.replace(&word.word, &format!("||{}||", word.word));
     }
 
-    let channel = ctx.cache.channel(message.channel_id).ok()?;
+    let channel = ctx
+        .cache
+        .channel(message.channel_id)
+        .context("channel is not cached")?;
     let (channel_id, thread_id) = channel_pair(&channel)?;
-    let member = message.member.ok()?;
+    let member = message.member.context("message doesn't have a member")?;
     webhook(
         &ctx,
         &member,
         &message.author,
-        message.guild_id.ok()?,
+        message
+            .guild_id
+            .context("message doesn't have a guild id")?,
         channel_id,
         thread_id,
         &content,

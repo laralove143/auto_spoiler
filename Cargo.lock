@@ -36,8 +36,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.59"
-source = "git+https://github.com/laralove143/anyhow#23132b3a91cc6c1d9c24bc0dcaeea7b1496df72c"
+version = "1.0.75"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "async-trait"
@@ -57,6 +58,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7c57d12312ff59c811c0643f4d80830505833c9ffaebd193d819392b265be8e"
 dependencies = [
  "num-traits",
+]
+
+[[package]]
+name = "auto_spoiler"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "futures-util",
+ "sqlx",
+ "tokio",
+ "twilight-cache-inmemory",
+ "twilight-gateway",
+ "twilight-http",
+ "twilight-interactions",
+ "twilight-model",
+ "twilight-util",
+ "twilight-webhook",
 ]
 
 [[package]]
@@ -1160,24 +1178,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
-name = "spoiler-bot"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "futures-util",
- "sqlx",
- "tokio",
- "twilight-cache-inmemory",
- "twilight-error",
- "twilight-gateway",
- "twilight-http",
- "twilight-interactions",
- "twilight-model",
- "twilight-util",
- "twilight-webhook",
-]
-
-[[package]]
 name = "sqlformat"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1553,16 +1553,6 @@ dependencies = [
  "serde",
  "twilight-model",
  "twilight-util",
-]
-
-[[package]]
-name = "twilight-error"
-version = "0.11.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c4add0630bb9e3887dbc2bc1a68bf8c604a8b91ab454095fcf839711b42f5ca"
-dependencies = [
- "twilight-http",
- "twilight-model",
 ]
 
 [[package]]

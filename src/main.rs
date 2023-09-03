@@ -9,11 +9,10 @@
 
 use std::{env, sync::Arc};
 
-use anyhow::{IntoResult, Result};
+use anyhow::{Context as _, Result};
 use futures_util::StreamExt;
 use sqlx::PgPool;
 use twilight_cache_inmemory::{InMemoryCache, ResourceType};
-use twilight_error::ErrorHandler;
 use twilight_gateway::{Cluster, EventTypeFlags};
 use twilight_http::{client::ClientBuilder, Client};
 use twilight_model::{
@@ -46,7 +45,6 @@ pub struct ContextInner {
     application_id: Id<ApplicationMarker>,
     user_id: Id<UserMarker>,
     owner_channel_id: Id<ChannelMarker>,
-    error_handler: ErrorHandler,
 }
 
 #[tokio::main]
@@ -101,17 +99,17 @@ async fn main() -> Result<()> {
         .await?;
 
     let owner_channel_id = http
-        .create_private_channel(application.owner.ok()?.id)
+        .create_private_channel(
+            application
+                .owner
+                .context("application doesn't include owner")?
+                .id,
+        )
         .exec()
         .await?
         .model()
         .await?
         .id;
-
-    let mut error_handler = ErrorHandler::new();
-    error_handler
-        .channel(owner_channel_id)
-        .file("spoiler_bot_errors.txt".into());
 
     interaction::create(&http, application.id).await?;
 
@@ -124,7 +122,6 @@ async fn main() -> Result<()> {
         user_id: http.current_user().exec().await?.model().await?.id,
         application_id: application.id,
         owner_channel_id,
-        error_handler,
         http,
     });
 
@@ -141,7 +138,7 @@ async fn handle_event(ctx: Context, event: Event) {
     ctx.cache.update(&event);
     ctx.webhooks.update(&event);
     if let Err(err) = _handle_event(Arc::clone(&ctx), event).await {
-        ctx.error_handler.handle(&ctx.http, err).await;
+        eprintln!("{err:#?}");
     }
 }
 
@@ -210,7 +207,10 @@ fn has_permissions(
 
 fn channel_pair(channel: &Channel) -> Result<(Id<ChannelMarker>, Option<Id<ChannelMarker>>)> {
     Ok(if channel.kind.is_thread() {
-        (channel.parent_id.ok()?, Some(channel.id))
+        (
+            channel.parent_id.context("thread doesn't have a parent")?,
+            Some(channel.id),
+        )
     } else {
         (channel.id, None)
     })

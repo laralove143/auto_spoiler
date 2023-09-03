@@ -28,7 +28,6 @@ twilight-cache-inmemory = { version = "0.11", features = [
 ] }
 twilight-interactions = "0.11"
 twilight-webhook = "0.11"
-twilight-error = "0.11"
 tokio = { version = "1.17.0", default-features = false, features = [
     "rt-multi-thread",
     "macros"
@@ -39,4 +38,4 @@ sqlx = { version = "0.6", default-features = false, features = [
     "postgres"
 ] }
 futures-util = "0.3"
-anyhow = { git = "https://github.com/laralove143/anyhow" }
+anyhow = "1.0"

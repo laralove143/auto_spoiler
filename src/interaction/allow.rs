@@ -1,4 +1,4 @@
-use anyhow::{IntoResult, Result};
+use anyhow::{Context as _, Result};
 use twilight_model::{
     application::interaction::MessageComponentInteraction,
     channel::message::MessageFlags,
@@ -15,9 +15,9 @@ pub async fn run(
 ) -> Result<InteractionResponse> {
     if !component
         .member
-        .ok()?
+        .context("component interaction doesn't have a member")?
         .permissions
-        .ok()?
+        .context("component interaction member doesn't have permissions attached")?
         .contains(Permissions::MANAGE_GUILD)
     {
         return Ok(InteractionResponse {

@@ -1,4 +1,4 @@
-use anyhow::{IntoResult, Result};
+use anyhow::{Context as _, Result};
 use twilight_interactions::command::{CommandModel, CommandOption, CreateCommand, CreateOption};
 use twilight_model::{application::interaction::ApplicationCommand, guild::Permissions};
 
@@ -50,13 +50,23 @@ pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static 
 
     let options = Tag::from_interaction(command.data.into())?;
 
-    let (channel_id, thread_id) = channel_pair(&*ctx.cache.channel(command.channel_id).ok()?)?;
-    let member = command.member.ok()?;
+    let (channel_id, thread_id) = channel_pair(
+        &*ctx
+            .cache
+            .channel(command.channel_id)
+            .context("channel is not cached")?,
+    )?;
+    let member = command.member.context("command doesn't have a member")?;
     webhook(
         ctx,
         &member,
-        member.user.as_ref().ok()?,
-        command.guild_id.ok()?,
+        member
+            .user
+            .as_ref()
+            .context("command member doesn't have a user")?,
+        command
+            .guild_id
+            .context("command doesn't have a guild id")?,
         channel_id,
         thread_id,
         &format!("{} {}", options.message, options.tag.value()),

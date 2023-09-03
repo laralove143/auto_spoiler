@@ -1,4 +1,4 @@
-use anyhow::{IntoResult, Result};
+use anyhow::{Context as _, Result};
 use twilight_interactions::command::{CommandModel, CreateCommand};
 use twilight_model::{application::interaction::ApplicationCommand, guild::Permissions};
 
@@ -17,11 +17,17 @@ pub struct AddCustomWord {
 }
 
 pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static str> {
-    let member = command.member.ok()?;
-    if !member.permissions.ok()?.contains(Permissions::MANAGE_GUILD) {
+    let member = command.member.context("command doesn't have a member")?;
+    if !member
+        .permissions
+        .context("member doesn't have permissions attached")?
+        .contains(Permissions::MANAGE_GUILD)
+    {
         return Ok("you need the manage guild permission to use this");
     }
-    let guild_id = command.guild_id.ok()?;
+    let guild_id = command
+        .guild_id
+        .context("command doesn't have a guild id")?;
 
     let options = AddCustomWord::from_interaction(command.data.into())?;
     let word = options.word.to_lowercase();
@@ -35,7 +41,9 @@ pub async fn run(ctx: &Context, command: ApplicationCommand) -> Result<&'static 
     }
 
     if options.suggest {
-        let user = member.user.ok()?;
+        let user = member
+            .user
+            .context("command member doesn't have a user attached")?;
 
         ctx.http
             .create_message(ctx.owner_channel_id)

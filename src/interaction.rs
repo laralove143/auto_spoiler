@@ -7,7 +7,10 @@ use twilight_model::{
     application::interaction::{ApplicationCommand, Interaction, MessageComponentInteraction},
     channel::message::MessageFlags,
     http::interaction::{InteractionResponse, InteractionResponseType},
-    id::{marker::ApplicationMarker, Id},
+    id::{
+        marker::{ApplicationMarker, GuildMarker},
+        Id,
+    },
 };
 use twilight_util::builder::InteractionResponseDataBuilder;
 
@@ -23,6 +26,8 @@ mod add_default_word;
 mod allow;
 mod tag;
 mod tw;
+
+const TEST_GUILD_ID: Id<GuildMarker> = Id::new(903_367_565_349_384_202);
 
 #[allow(clippy::wildcard_enum_match_arm)]
 pub async fn handle(ctx: Context, interaction: Interaction) -> Result<()> {
@@ -96,10 +101,7 @@ pub async fn create(http: &Client, application_id: Id<ApplicationMarker>) -> Res
         .await?;
 
     client
-        .set_guild_commands(
-            env!("TEST_GUILD_ID").parse()?,
-            &[AddDefaultWord::create_command().into()],
-        )
+        .set_guild_commands(TEST_GUILD_ID, &[AddDefaultWord::create_command().into()])
         .exec()
         .await?;
 
