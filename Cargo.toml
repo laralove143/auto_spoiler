@@ -1,5 +1,5 @@
 [package]
-name = "spoiler-bot"
+name = "auto_spoiler"
 description = "a discord bot that automatically puts possibly triggering words in spoilers"
 version = "0.1.0"
 authors = ["laralove143 <laralove143@icloud.com>"]
